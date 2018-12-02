@@ -1,2 +1,44 @@
 ---
 # tasks file for ansible-openstack-common
+
+## TODO: Break this out to its own ansible-galaxy role
+- name: Install Chrony
+  yum:
+    name: chrony
+    state: present
+
+- name: Copy chrony.conf in place
+  template:
+    src: chrony-conf.j2
+    dest: /etc/chrony.conf
+  notify: restart chrony
+
+- name: Ensure Chrony is started and enabled
+  service:
+    name: chronyd
+    state: started
+    enabled: true
+
+- name: Enable OpenStack Repository - via rpm
+  yum:
+    name: centos-release-openstack-rocky
+    state: present
+
+## TODO: Correct linting error
+# [ANSIBLE0010] Package installs should not use latest
+# ansible-openstack-common/tasks/main.yml:25
+# Task/Handler: Upgrade the packages on all nodes
+# - name: Upgrade the packages on all nodes
+#   yum:
+#     name: '*'
+#     state: latest
+
+- name: Install OpenStack client
+  yum:
+    name: python-openstackclient
+    state: present
+
+- name: Install OpenStack selinux
+  yum:
+    name: openstack-selinux
+    state: present
